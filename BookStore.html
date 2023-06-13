@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #bookTable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #bookTable th, #bookTable td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #bookTable th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <table id="bookTable">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Price</th>
+        <!-- Add more columns if needed -->
+      </tr>
+    </thead>
+    <tbody id="bookTableBody"></tbody>
+  </table>
+
+  <script>
+    fetch('https://localhost:7192/api/Book/GetAllBook')
+      .then(response => response.json())
+      .then(data => {
+        const tableBody = document.getElementById('bookTableBody');
+        
+        data.forEach(book => {
+          const row = document.createElement('tr');
+          
+          const titleCell = document.createElement('td');
+          titleCell.textContent = book.name;
+          row.appendChild(titleCell);
+          
+          const authorCell = document.createElement('td');
+          authorCell.textContent = book.author;
+          row.appendChild(authorCell);
+          
+          const priceCell = document.createElement('td');
+          priceCell.textContent = book.price;
+          row.appendChild(priceCell);
+          
+          tableBody.appendChild(row);
+        });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  </script>
+</body>
+</html>
