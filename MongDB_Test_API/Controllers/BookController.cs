@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongDB_Test_API_BookStore.ViewModel;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Repository.Model;
@@ -19,8 +20,9 @@ namespace MongDB_Test_API.Controllers
         [HttpGet("GetAllBook")]
         public IActionResult getAll()
         {
-            List<Book> books = _bookCollection.Find(_ => true).ToList(); // Retrieve all documents from the collection
-            return Ok(books);
+            List<Book> books = _bookCollection.Find(_ => true).ToList();
+            var sortedBooks = books.OrderByDescending(b => b.Price).ToList();
+            return Ok(sortedBooks);
         }
         [HttpGet("GetBookByID/{id}")]
         public IActionResult GetById(Guid id)
@@ -35,12 +37,60 @@ namespace MongDB_Test_API.Controllers
 
             return Ok(book);
         }
-        [HttpPost("AddNewBook")]
-        public IActionResult Add([FromBody] Book book)
+        [HttpGet("SearchByNameKeyWord")]
+        public IActionResult SearchByName(string keyword)
         {
-            book.Book_ID = Guid.NewGuid(); ;
-            _bookCollection.InsertOne(book);
+            var filter = Builders<Book>.Filter.Regex("Name", new BsonRegularExpression(keyword, "i")); // Case-insensitive regex match on the "Name" field
+            List<Book> books = _bookCollection.Find(filter).ToList();
+
+            if (books.Count == 0)
+            {
+                return NotFound("No books found matching the search keyword.");
+            }
+
+            return Ok(books);
+        }
+        [HttpGet("SearhBookByAuthor")]
+        public IActionResult searchByAuthor(string author)
+        {
+            var filter = Builders<Book>.Filter.Eq("Author", author);
+            var books = _bookCollection.Find(filter).ToList();
+            if (books.Count == 0)
+            {
+                return NotFound("No book found matching the search author");
+            }
+            return Ok(books);
+        }
+        [HttpPost("AddNewBook")]
+        public IActionResult Add(BookViewModel bookview)
+        {
+            Book b = new Book
+            {
+                Book_ID = new Guid(),
+                Name = bookview.Name,
+                Author = bookview.Author,
+                Price = bookview.Price,
+            };
+            _bookCollection.InsertOne(b);
             return Ok("Book added successfully.");
+        }
+        [HttpPost("Add many")]
+        public IActionResult AddMany(List<BookViewModel> bookList)
+        {
+            List<Book> bookLists = new List<Book>();
+            foreach (var item in bookList)
+            {
+                bookLists.Add(new Book
+                {
+                    Book_ID = Guid.NewGuid(),
+                    Author = item.Author,
+                    Name = item.Name,
+                    Price = item.Price
+                });
+            }
+
+            _bookCollection.InsertMany(bookLists);
+            return Ok("Books added!");
         }
 
         [HttpDelete("DelelteByID/{id}")]
@@ -58,7 +108,7 @@ namespace MongDB_Test_API.Controllers
         }
 
         [HttpPut("UpdateByID/{id}")]
-        public IActionResult UpdateById2(Guid id, [FromBody] Book updatedBook)
+        public IActionResult UpdateById(Guid id, [FromBody] Book updatedBook)
         {
             var filter = Builders<Book>.Filter.Eq("_id", id);
 
