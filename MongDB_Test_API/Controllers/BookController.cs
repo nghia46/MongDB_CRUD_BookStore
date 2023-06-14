@@ -34,7 +34,6 @@ namespace MongDB_Test_API.Controllers
             {
                 return NotFound("Book not found.");
             }
-
             return Ok(book);
         }
         [HttpGet("SearchByNameKeyWord")]
@@ -47,7 +46,6 @@ namespace MongDB_Test_API.Controllers
             {
                 return NotFound("No books found matching the search keyword.");
             }
-
             return Ok(books);
         }
         [HttpGet("SearhBookByAuthor")]
@@ -88,11 +86,28 @@ namespace MongDB_Test_API.Controllers
                     Price = item.Price
                 });
             }
-
             _bookCollection.InsertMany(bookLists);
             return Ok("Books added!");
         }
+        [HttpPut("UpdateByID/{id}")]
+        public IActionResult UpdateById(Guid id, BookViewModel book)
+        {
+            var filter = Builders<Book>.Filter.Eq("_id", id);
+            var update = Builders<Book>.Update
+                .Set("Name", book.Name)
+                .Set("Author", book.Author)
+                .Set("Price", book.Price);
 
+            var options = new UpdateOptions { IsUpsert = false };
+
+            var result = _bookCollection.UpdateOne(filter, update, options);
+
+            if (result.ModifiedCount == 0)
+            {
+                return NotFound("Book not found.");
+            }
+            return Ok("Book updated successfully.");
+        }
         [HttpDelete("DelelteByID/{id}")]
         public IActionResult DeleteById(Guid id)
         {
@@ -103,32 +118,7 @@ namespace MongDB_Test_API.Controllers
             {
                 return NotFound("Book not found.");
             }
-
             return Ok("Book deleted successfully.");
         }
-
-        [HttpPut("UpdateByID/{id}")]
-        public IActionResult UpdateById(Guid id, [FromBody] Book updatedBook)
-        {
-            var filter = Builders<Book>.Filter.Eq("_id", id);
-
-            var update = Builders<Book>.Update
-                .Set("Name", updatedBook.Name)
-                .Set("Author", updatedBook.Author)
-                .Set("Price", updatedBook.Price);
-
-            var options = new UpdateOptions { IsUpsert = false };
-
-            var result = _bookCollection.UpdateOne(filter, update, options);
-
-            if (result.ModifiedCount == 0)
-            {
-                return NotFound("Book not found.");
-            }
-
-            return Ok("Book updated successfully.");
-        }
-
     }
-
 }
