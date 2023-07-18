@@ -120,5 +120,19 @@ namespace MongDB_Test_API.Controllers
             }
             return Ok("Book deleted successfully.");
         }
+        [HttpDelete("ClearTrash/{name}")]
+        public IActionResult ClearTrash(string name)
+        {
+            var filter = Builders<Book>.Filter.Eq("Name",name);
+            var result = _bookCollection.DeleteMany(filter);
+
+            if (result.DeletedCount == 0)
+            {
+                return NotFound("No books found with the specified name.");
+            }
+
+            return Ok("Books deleted successfully."+"Books deleted: "+result.DeletedCount);
+        }
+       
     }
 }

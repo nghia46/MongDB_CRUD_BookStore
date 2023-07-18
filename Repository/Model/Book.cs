@@ -14,9 +14,9 @@ namespace Repository.Model
         [BsonId]
         public Guid Book_ID { get; set; }
         [BsonElement("Name")]
-        public string Name { get; set; }
+        public string ?Name { get; set; }
         [BsonElement("Author")]
-        public string Author { get; set; }
+        public string ?Author { get; set; }
         [BsonElement("Price")]
         public double Price { get; set; }
     }

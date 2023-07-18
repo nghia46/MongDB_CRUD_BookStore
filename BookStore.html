@@ -32,7 +32,7 @@
   </table>
 
   <script>
-    fetch('https://localhost:7192/api/Book/GetAllBook')
+    fetch('http://localhost:5129/api/Book/GetAllBook')
       .then(response => response.json())
       .then(data => {
         const tableBody = document.getElementById('bookTableBody');
